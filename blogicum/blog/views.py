@@ -185,7 +185,10 @@ def register(request):
             return redirect('login')
     else:
         form = UserCreationForm()
-    return render(request, 'registration/registration_form.html', {'form': form})
+    context = {
+        'form': form
+    }
+    return render(request, 'registration/registration_form.html', context)
 
 
 def profile(request, username):
