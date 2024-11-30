@@ -42,10 +42,7 @@ def category_posts(request, slug):
 
 
 def post_detail(request, pk):
-    post = get_object_or_404(
-        Post,
-        pk=pk,
-    )
+    post = get_object_or_404(Post, pk=pk)
     if request.user == post.author:
         form = CommentForm()
         comments = post.comment.all()
@@ -55,14 +52,14 @@ def post_detail(request, pk):
             'form': form if request.user.is_authenticated else None
         }
         return render(request, 'blog/detail.html', context)
-    
+
     if not post.is_published:
         raise Http404
     if post.pub_date > now():
         raise Http404
     if not post.category or not post.category.is_published:
         raise Http404
-    
+
     form = CommentForm()
     comments = post.comment.all()
     context = {
@@ -90,7 +87,7 @@ def post_create(request):
 @login_required(login_url='login')
 def post_edit(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    if post.author != request.user: 
+    if post.author != request.user:
         return redirect('blog:post_detail', pk=post.id)
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES, instance=post)
@@ -209,7 +206,10 @@ def profile(request, username):
 @login_required
 def edit_profile(request):
     if request.method == "POST":
-        form = UserChangeForm(request.POST, instance=request.user)
+        form = UserChangeForm(
+            request.POST,
+            instance=request.user
+        )
         if form.is_valid():
             form.save()
             return redirect('blog:profile', username=request.user.username)
