@@ -151,7 +151,6 @@ class Comment(models.Model):
         verbose_name="Создан"
     )
 
-
     class Meta:
         verbose_name = "комментарий"
         verbose_name_plural = "Комментарии"

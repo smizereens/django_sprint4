@@ -1,6 +1,5 @@
 
 from django.http import Http404
-from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.decorators import login_required
@@ -25,6 +24,7 @@ def index(request):
     }
     return render(request, 'blog/index.html', context)
 
+
 def category_posts(request, slug):
     category = get_object_or_404(Category, slug=slug, is_published=True)
     post_list = category.post_set.filter(
@@ -46,7 +46,6 @@ def post_detail(request, pk):
         Post,
         pk=pk,
     )
-    # Если текущий пользователь - автор поста, показываем пост без проверок
     if request.user == post.author:
         form = CommentForm()
         comments = post.comment.all()
@@ -57,7 +56,6 @@ def post_detail(request, pk):
         }
         return render(request, 'blog/detail.html', context)
     
-    # Для не-авторов проверяем все условия публикации
     if not post.is_published:
         raise Http404
     if post.pub_date > now():
@@ -134,10 +132,13 @@ def add_comment(request, post_id):
             return redirect('blog:post_detail', pk=post_id)
     else:
         form = CommentForm()
-    return render(request, 'blog/detail.html', {'form': form, 'post': post, 'comments': post.comment.all()})
+    context = {
+        'form': form,
+        'post': post,
+        'comments': post.comment.all()
+    }
+    return render(request, 'blog/detail.html', context)
 
-
-from .forms import CommentForm
 
 @login_required
 def comment_edit(request, post_id, comment_id):
@@ -155,7 +156,12 @@ def comment_edit(request, post_id, comment_id):
     else:
         form = CommentForm(instance=comment)
 
-    return render(request, "blog/create.html", {"form": form, "is_edit": True, "post": post})
+    context = {
+        "form": form,
+        "is_edit": True,
+        "post": post
+    }
+    return render(request, "blog/create.html", context)
 
 
 @login_required
@@ -167,7 +173,11 @@ def comment_delete(request, post_id, comment_id):
     if request.method == "POST":
         comment.delete()
         return redirect("blog:post_detail", pk=post.id)
-    return render(request, "blog/comment.html", {"object": comment, "type": "comment"})
+    context = {
+        "object": comment,
+        "type": "comment"
+    }
+    return render(request, "blog/comment.html", context)
 
 
 def register(request):
